@@ -9,11 +9,11 @@ class Event:
     signal = 300
 
     def __init__(self, i, ts, ask, bid, s) -> None:
-        self.index = i.copy()
-        self.timestamp = ts.copy()
-        self.ask_price = ask.copy()
-        self.bid_price = bid.copy()
-        self.signal = s.copy()
+        self.index = i
+        self.timestamp = ts
+        self.ask_price = ask
+        self.bid_price = bid
+        self.signal = s
 
 class Adding:
     usd = 0.
@@ -21,9 +21,9 @@ class Adding:
     index = 100500
 
     def __init__(self, u, ts, i) -> None:
-        self.usd = u.copy()
-        self.timestamp = ts.copy()
-        self.index = i.copy()
+        self.usd = u
+        self.timestamp = ts
+        self.index = i
 
 
 # тут тоже  все одномерное торгуем одной монеткой
@@ -45,7 +45,7 @@ def run_backtest(ask_prices : numpy.array,
     events.sort(key=lambda event : event.timestamp)
     USL_LOG = []
     CUR_USL = [] # первые len(ask_prices) значений -- количество соответствущих монеток, ask_price -- текущая сумма usd
-    CUR_USL.append([0] * len(ask_prices) + start_usd)
+    CUR_USL = [0.] * len(ask_prices) + [start_usd]
     USL_LOG.append(CUR_USL)
     addings = []
     for event in events:
@@ -58,7 +58,7 @@ def run_backtest(ask_prices : numpy.array,
         addings = new_addings
 
         if event.signal == -1:
-            addings.append(Adding(event.timestamp, (event.bid_price * CUR_USL[event.index] * (1 - commission)),
+            addings.append(Adding((event.bid_price * CUR_USL[event.index] * (1. - commission)),
                               event.timestamp + delay, -1))
             CUR_USL[event.index] = 0
         if event.signal == 1:
@@ -69,4 +69,4 @@ def run_backtest(ask_prices : numpy.array,
     for adding in addings:
         CUR_USL[adding.index] += adding.usd
     USL_LOG.append(CUR_USL)
-    return CUR_USL
+    return USL_LOG

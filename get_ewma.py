@@ -14,6 +14,7 @@ def get_ewma(data_array : numpy.array, window_size : int, last_weight : int) -> 
         s = 0.
         lw = last_weight
         for j in range(i - window_size, i):
+            # print(f"i = {i}, j = {j}")
             s += lw * data_array[j]
             lw *= 2
         res.append(s / total_weight)
