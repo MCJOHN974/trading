@@ -123,4 +123,4 @@ sol = optimize.differential_evolution(test_params_evo2,
                                      workers=8, 
                                      constraints=(), 
                                      x0=None)
-print(sol.x, sol.fun)
+print(sol.x, -1. * sol.fun)
