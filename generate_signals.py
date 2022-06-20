@@ -33,7 +33,8 @@ def generate_signals(ask_prices : numpy.array, bid_prices : numpy.array,
                                  numpy.array(list(map(comprator, diff_long, diff_short)))), 
                                 axis=0)
 
-    # две следующие строчки делают сигналы рандомными                                
+    # две следующие строчки делают сигналы рандомными
+    # вроде они все ухудшают, так что сигналы не так уж и плохо генерирую                           
     # for i in range(len(signals)):
     #    signals[i] = randint(-1, 1)
     return signals

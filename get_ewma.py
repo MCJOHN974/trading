@@ -4,7 +4,7 @@ import numpy
 # Зато с примером из условия все правильно считаем
 # тут тоже assume массив одномерный (я тупой не умею в нампай просто)
 def get_ewma(data_array : numpy.array, window_size : int, last_weight : float) -> numpy.array:
-    window_size = int(window_size) # этот ваш сципай не умеет интами подгонять
+    window_size = int(window_size) # этот ваш scipy не умеет интами подгонять
     res = []
     total_weight = 0.
     tmp = last_weight
