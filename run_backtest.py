@@ -9,22 +9,29 @@ class Event:
     signal = 300
 
     def __init__(self, i, ts, ask, bid, s) -> None:
-        self.index = i
-        self.timestamp = ts
-        self.ask_price = ask
-        self.bid_price = bid
-        self.signal = s
+        self.index = i + 0
+        self.timestamp = ts + 0
+        self.ask_price = ask + 0.
+        self.bid_price = bid + 0.
+        self.signal = s + 0
 
+id_count = 0
 class Adding:
-    usd = 0.
+    id = -1
+    value = 0.
     timestamp = -1
     index = 100500
 
-    def __init__(self, u, ts, i) -> None:
-        self.usd = u
-        self.timestamp = ts
-        self.index = i
+    def __init__(self, v, ts, i) -> None:
+        global id_count
+        assert v >= 0.
+        self.id = id_count
+        id_count += 1
+        self.value = v + 0.
+        self.timestamp = ts + 0
+        self.index = i + 0
 
+used_id = {}
 
 # тут тоже  все одномерное торгуем одной монеткой
 # а вот хуй, тут уже обязательно видимо не одномерное...
@@ -36,7 +43,6 @@ def run_backtest(ask_prices : numpy.array,
                  commission : float,
                  delay : float,
                  start_usd : float):
-
     events = [] # да лист это колхоз а что вы мне сделаете, я в другом городе (я реально в другом городе у вышки общаги за мкадом лол)
     for i in range(ask_prices.shape[0]):
         for j in range(bid_prices.shape[1]):
@@ -52,21 +58,25 @@ def run_backtest(ask_prices : numpy.array,
         new_addings = []
         for adding in addings:
             if adding.timestamp <= event.timestamp:
-                CUR_USL[adding.index] += adding.usd
+                CUR_USL[adding.index] += adding.value
+                assert adding.id not in used_id.keys()
+                used_id[adding.id] = "bebra"
             else:
                 new_addings.append(adding)
         addings = new_addings
-
-        if event.signal == -1:
-            addings.append(Adding((event.bid_price * CUR_USL[event.index] * (1. - commission)),
-                              event.timestamp + delay, -1))
+        if event.signal == -1 and CUR_USL[event.index] > 0.:
+            addings.append(Adding((CUR_USL[event.index] * event.bid_price * (1. - commission)),
+                                   event.timestamp + delay, -1))
             CUR_USL[event.index] = 0
         if event.signal == 1:
             buy_sum = min(CUR_USL[-1], max_position_usd)
-            addings.append(Adding(event.timestamp, (event.ask_price / buy_sum * (1. - commission)), event.index))
+            addings.append(Adding((buy_sum / event.ask_price * (1. - commission)), 
+                                   event.timestamp + delay, event.index))
             CUR_USL[-1] -= buy_sum
+            assert CUR_USL[-1] >= 0.
         USL_LOG.append(CUR_USL)
+        # print(f"CUR_USL = {CUR_USL}")
     for adding in addings:
-        CUR_USL[adding.index] += adding.usd
+        CUR_USL[adding.index] += adding.value
     USL_LOG.append(CUR_USL)
     return USL_LOG
