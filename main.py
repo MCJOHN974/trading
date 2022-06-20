@@ -92,8 +92,19 @@ def test_params(open_treshold = 0.01,
     print(f"Total earnings = {earnings- start_usd}")
     return -1. * earnings
 
+def test_params_evo(open_treshold,
+                   close_treshhold,
+                   window_size_long,
+                   window_size_short,
+                   last_weight,
+                   max_position_usd):
+    return test_params(open_treshold[0], close_treshhold[0], window_size_long, window_size_short, last_weight, max_position_usd)
 
-sol = optimize.differential_evolution(test_params, 
+def test_params_evo2(lst):
+    return test_params(lst[0], lst[1], lst[2], lst[3], lst[4], lst[5])
+
+
+sol = optimize.differential_evolution(test_params_evo2, 
                                      [(0., 1.), (0., 1.), (100, 1000), (1, 100), (0., 0.5), (1, 1000)],
                                      args=(),
                                      strategy='best1bin',
@@ -109,7 +120,7 @@ sol = optimize.differential_evolution(test_params,
                                      init='latinhypercube', 
                                      atol=0, 
                                      updating='immediate', 
-                                     workers=1, 
+                                     workers=8, 
                                      constraints=(), 
                                      x0=None)
-print(sol.x)
+print(sol.x, sol.fun)
