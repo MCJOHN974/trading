@@ -44,12 +44,13 @@ last_weight = 0.5
 max_position_usd = 100
 
 # const params
-comission = 0.01
-delay = 100
+comission = 0.0001
+delay = 1
 start_usd = 100000.
 
 # tmp param
-data_part = 1000
+data_part = 1000 # я запускал на 10000 то же самое получается
+
 
 
 def test_params(open_treshold = 0.01,
@@ -57,51 +58,50 @@ def test_params(open_treshold = 0.01,
                 window_size_long = 500,
                 window_size_short = 100,
                 last_weight = 0.5,
-                max_position_usd = 100):
-    print("Start signal generating")
-    signals = [generate_signals(ask_price_bch[:data_part], bid_price_bch[:data_part], open_treshold, close_treshhold, window_size_long, window_size_short, last_weight),
-               generate_signals(ask_price_btc[:data_part], bid_price_btc[:data_part], open_treshold, close_treshhold, window_size_long, window_size_short, last_weight),
-               generate_signals(ask_price_eth[:data_part], bid_price_eth[:data_part], open_treshold, close_treshhold, window_size_long, window_size_short, last_weight),
-               generate_signals(ask_price_ltc[:data_part], bid_price_ltc[:data_part], open_treshold, close_treshhold, window_size_long, window_size_short, last_weight),
-               generate_signals(ask_price_sol[:data_part], bid_price_sol[:data_part], open_treshold, close_treshhold, window_size_long, window_size_short, last_weight),
-               generate_signals(ask_price_xrp[:data_part], bid_price_xrp[:data_part], open_treshold, close_treshhold, window_size_long, window_size_short, last_weight)]
-    print("Signal generating ends")
-    ask_prices = [ask_price_bch[:data_part],
-                  ask_price_btc[:data_part],
-                  ask_price_eth[:data_part],
-                  ask_price_ltc[:data_part],
-                  ask_price_sol[:data_part],
-                  ask_price_xrp[:data_part]]
-    bid_prices = [bid_price_bch[:data_part],
-                  bid_price_btc[:data_part],
-                  bid_price_eth[:data_part],
-                  bid_price_ltc[:data_part],
-                  bid_price_sol[:data_part],
-                  bid_price_xrp[:data_part]]
-    timestamps = [timestamp_bch[:data_part],
-                  timestamp_btc[:data_part],
-                  timestamp_eth[:data_part],
-                  timestamp_ltc[:data_part],
-                  timestamp_sol[:data_part],
-                  timestamp_xrp[:data_part]]
-    print("Backtest started")
+                max_position_usd = 100,
+                begin = 0,
+                end = data_part):
+    # print("Start signal generating")
+    signals = [generate_signals(ask_price_bch[begin:end], bid_price_bch[begin:end], open_treshold, close_treshhold, window_size_long, window_size_short, last_weight),
+               generate_signals(ask_price_btc[begin:end], bid_price_btc[begin:end], open_treshold, close_treshhold, window_size_long, window_size_short, last_weight),
+               generate_signals(ask_price_eth[begin:end], bid_price_eth[begin:end], open_treshold, close_treshhold, window_size_long, window_size_short, last_weight),
+               generate_signals(ask_price_ltc[begin:end], bid_price_ltc[begin:end], open_treshold, close_treshhold, window_size_long, window_size_short, last_weight),
+               generate_signals(ask_price_sol[begin:end], bid_price_sol[begin:end], open_treshold, close_treshhold, window_size_long, window_size_short, last_weight),
+               generate_signals(ask_price_xrp[begin:end], bid_price_xrp[begin:end], open_treshold, close_treshhold, window_size_long, window_size_short, last_weight)]
+    # print("Signal generating ends")
+    ask_prices = [ask_price_bch[begin:end],
+                  ask_price_btc[begin:end],
+                  ask_price_eth[begin:end],
+                  ask_price_ltc[begin:end],
+                  ask_price_sol[begin:end],
+                  ask_price_xrp[begin:end]]
+    bid_prices = [bid_price_bch[begin:end],
+                  bid_price_btc[begin:end],
+                  bid_price_eth[begin:end],
+                  bid_price_ltc[begin:end],
+                  bid_price_sol[begin:end],
+                  bid_price_xrp[begin:end]]
+    timestamps = [timestamp_bch[begin:end],
+                  timestamp_btc[begin:end],
+                  timestamp_eth[begin:end],
+                  timestamp_ltc[begin:end],
+                  timestamp_sol[begin:end],
+                  timestamp_xrp[begin:end]]
+    # print("Backtest started")
     LOG_USL = run_backtest(numpy.array(ask_prices), numpy.array(bid_prices), numpy.array(timestamps), 
                            numpy.array(signals), max_position_usd, comission, delay, start_usd)
-    print("Backtest finished")
+    # print("Backtest finished")
     earnings = count_earnings(LOG_USL, bid_prices, comission)
-    print(f"Total earnings = {earnings- start_usd}")
+    # print(f"Total earnings = {earnings- start_usd}")
     return -1. * earnings
 
-def test_params_evo(open_treshold,
-                   close_treshhold,
-                   window_size_long,
-                   window_size_short,
-                   last_weight,
-                   max_position_usd):
-    return test_params(open_treshold[0], close_treshhold[0], window_size_long, window_size_short, last_weight, max_position_usd)
 
 def test_params_evo2(lst):
     return test_params(lst[0], lst[1], lst[2], lst[3], lst[4], lst[5])
+
+
+def test_params_evo3(lst):
+    return test_params(lst[0], lst[1], lst[2], lst[3], lst[4], lst[5], data_part, 2 * data_part)
 
 
 sol = optimize.differential_evolution(test_params_evo2, 
@@ -120,7 +120,8 @@ sol = optimize.differential_evolution(test_params_evo2,
                                      init='latinhypercube', 
                                      atol=0, 
                                      updating='immediate', 
-                                     workers=8, 
+                                     workers=-1, 
                                      constraints=(), 
                                      x0=None)
-print(sol.x, -1. * sol.fun)
+print(f"Train results:\n args = {sol.x}\nvalue =  {-1. * sol.fun}")
+print(f"Test results:\n value = {-1. * test_params_evo3(sol.x)}")
